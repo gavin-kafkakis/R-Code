@@ -1,0 +1,39 @@
+library(xml2)
+user_agent <- "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+
+current_page <- "https://www.scrapethissite.com/pages/simple/"
+
+page <- read_html(current_page, user_agent)
+Sys.sleep(10)
+
+country <- xml_text(xml_find_all(page, "//div[@class='col-md-4 country']/h3[@class='country-name']"))
+length(country)
+
+capital <- xml_text(xml_find_all(page, "//div[@class='col-md-4 country']/div[@class='country-info']/
+span[@class='country-capital']"))
+length(capital)
+
+population <-  xml_text(xml_find_all(page, "//div[@class='col-md-4 country']/div[@class='country-info']/
+span[@class='country-population']"))
+length(population)
+
+area <-  xml_text(xml_find_all(page, "//div[@class='col-md-4 country']/div[@class='country-info']/
+span[@class='country-area']"))
+length(area)
+area
+
+country_df <- data.frame(country, capital, population, area)
+
+country_df$country <- trimws(country_df$country)
+
+country_df$area <- as.numeric(country_df$area)
+
+country_df <- country_df[order(country_df$area, decreasing = FALSE), ]
+
+country_df <- country_df[-which(country_df$population <= 0), ]
+
+write.csv(country_df, file("country_scraping.csv"))
+
+
+
+
