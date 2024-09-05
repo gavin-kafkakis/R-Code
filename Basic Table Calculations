@@ -1,0 +1,40 @@
+#Gavin Kafkakis 2.18.24
+# Finding different statistics throughout the table and then using formulas to calculate them 
+
+rm(list=ls())
+
+# question 1 
+# looks like nba.txt is a csv file 
+# if there is missing data then it is shown as them putting unknown into the dataset 
+nba <- read.csv("nba.txt", sep = ";")
+
+nba$Height[nba$Height == "unknown"] <- NA
+nba$Weight[nba$Weight == "unknown"] <- NA
+
+missing_nba <- colSums(is.na(nba))
+
+nba_full <- na.omit(nba)
+# there are 11 less observations after removing all of the missing values 
+nba2 <- nba 
+
+nba2$Height[is.na(nba2$Height) & nba2$Pos == "C"] <- 
+  median(nba2$Height[nba2$Pos == "C"], na.rm = TRUE)
+nba2$Height[is.na(nba2$Height) & nba2$Pos == "F"] <- 
+  median(nba2$Height[nba2$Pos == "F"], na.rm = TRUE)
+nba2$Height[is.na(nba2$Height) & nba2$Pos == "G"] <- 
+  median(nba2$Height[nba2$Pos == "G"], na.rm = TRUE)
+
+
+#question 2 
+
+greendale <- read.csv("greendale.csv", stringsAsFactors = FALSE, na.strings=c("", " "))
+greendale2 <- greendale
+
+greendale2$Birthdate <- as.Date(greendale2$Birthdate, format = "%m/%d/%Y")
+
+unique(greendale2)
+
+greendale2$HomeState <- gsub('Colorado', 'CO', greendale2$HomeState)
+greendale2$Hometown <- gsub('Denvr', 'Denver', greendale2$Hometown)
+
+greendale2$Birthdate <- gsub('2090-12-19', '1990-12-19', greendale2$Birthdate)
