@@ -1,0 +1,35 @@
+# Gavin Kafkakis 2/5/24
+
+rm(list=ls())
+
+#question 1 
+nyt <- stream_in(file("newyorktimes.json")
+
+nyt$price <- as.numeric(nyt$price)
+nyt$bestsellers_date <- as.Date(nyt$bestsellers_date)
+nyt$published_date <- as.Date(nyt$published_date)
+nyt$rank <- as.integer(nyt$rank)
+nyt$rank_last_week <- as.integer(nyt$rank_last_week)
+nyt$weeks_on_list <- as.integer(nyt$weeks_on_list)
+
+str(nyt)
+
+nyt$description <- gsub("", NA, nyt$description)
+nyt$price <- gsub(0, NA, nyt$price)
+nyt$rank_last_week <- gsub(0, NA, nyt$rank_last_week)
+
+missing_data <- colSums(is.na(nyt))
+
+
+#question 2
+coaches <- read.csv("coaches.txt", sep = "#")
+
+duplicated(coaches)
+
+coaches <- coaches[!duplicated(coaches),]
+
+coaches <- coaches[which(!duplicated(coaches$Coach)),]
+
+
+stream_out(coaches, file("coaches.json")) 
+
