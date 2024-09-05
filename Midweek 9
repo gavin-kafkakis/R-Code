@@ -1,0 +1,27 @@
+
+
+
+library(httr)
+library(jsonlite)
+
+url <- "https://services.arcgis.com/vPD5PVLI6sfkZ5E4/ArcGIS/rest/services/CurrentIowaSchoolDistricts/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json"
+raw<- GET(url)
+schools <- fromJSON(content(raw, "text"), flatten=TRUE)
+
+column_names <- schools$fields$name
+aea_df <- as.data.frame(schools$features)
+colnames(aea_df) <- column_names
+
+aea_new_df <- subset(aea_df, select = c("SchoolDistName", "AEA", "Pop2020"))
+
+#question 2 
+aea_count <- aea_new_df %>% group_by(AEA) %>% summarize(count = n())
+aea_1 <- aea_count$count[aea_count$AEA == "01"]
+aea_sum <- sum(aea_count$count)
+average_one_aea <- aea_1 / aea_sum
+
+#question 3 
+
+
+
+
