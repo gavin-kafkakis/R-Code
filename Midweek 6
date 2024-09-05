@@ -1,0 +1,24 @@
+# Gavin Kafkakis 2.21.24
+
+rm(list=ls())
+ 
+menu <- read_xml("menu.xml")
+#question 1
+root_node <- xml_root(menu)
+#question 2
+children <- xml_children(menu)
+#question 3 
+subchild <- xml_children(children)
+#question 4 
+prices <- xml_text(xml_find_all(menu, "//price"))
+#question 5 
+names <- xml_text(xml_find_all(menu, "//name"))
+#question 6 
+prices <- gsub("\\$", "", prices)
+prices <- as.numeric(prices)
+# question 7 
+avg_price <- mean(prices)
+# question 8 
+menu_df <- data.frame(names, prices)
+colnames(menu_df)[1] <- "Food_Item"
+colnames(menu_df)[2] <- "Price"
