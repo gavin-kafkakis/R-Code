@@ -1,0 +1,32 @@
+library(tidyverse)
+library(jsonlite)
+library(readxl)
+library(janitor)
+
+
+cities1 <- fromJSON("cities1.json")
+cities2 <- read_excel("cities2.xlsx")
+
+#seperate population column 
+#str_split_flixed could use this 
+cities2 <- separate(cities2, Population, into=c("population", "value"), sep = " ")
+cities2$population <- as.numeric(cities2$population)
+cities2$population <- cities2$population * 1000000
+
+cities2$`Police Officers` <- NULL
+cities2$value <- NULL
+
+cities1$census <- NULL
+
+names(cities1)[names(cities1)=="city"] <- "Hometown"
+names(cities1)[names(cities1)=="state"] <- "State"
+
+cities4 <- rbind(cities1, cities2)
+
+
+
+cities3 <- read.csv("cities3.csv")
+cities3 <- cities3[rowSums(is.na(cities3)) == 0, ]
+
+
+
