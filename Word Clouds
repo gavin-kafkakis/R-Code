@@ -1,0 +1,27 @@
+# gavin kafkakis 4.19.24
+# end of week 13
+
+#learning about creating word charts to be to count the number of words in a album with different songs 
+rm(list=ls())
+
+melbourne <- readLines("melbourne.txt")
+melbourne
+
+melbourne <- gsub("\\[.*?\\]", "", melbourne) 
+melbourne <- midnights[nzchar(melbourne)] #removes empty lines
+melbourne <- trimws(melbourne)
+
+melbourne_text <- melbourne 
+
+melbourne_docs <- Corpus(VectorSource(melbourne))
+
+ctrl <- list(removePunctuation=TRUE, removeNumbers=TRUE, stopwords=TRUE) 
+melbourne_dtm <- DocumentTermMatrix(melbourne_docs, control = ctrl)
+matrix <- as.matrix(melbourne_dtm) 
+words <- sort(colSums(matrix),decreasing=TRUE) 
+word_freq <- data.frame(word = names(words),freq=words)
+
+word_freq_df <- data.frame(word = word_freq$word, freq = word_freq$freq)
+word_freq_df <- word_freq_df[order(word_freq_df$freq, decreasing = TRUE), ]
+
+top20 <- head(word_freq_df,20)
