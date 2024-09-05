@@ -1,0 +1,21 @@
+# gavin Kafkakis 3.24.24
+# reading different webistes and finding where certain parameters are in place 
+
+rm(list=ls())
+
+library(RSocrata)
+#question 1 
+url <- "https://mydata.iowa.gov/resource/3adi-mht4.json"
+full_data <- read.socrata(url)
+url <- "https://mydata.iowa.gov/resource/3adi-mht4.json?$where=date>'2023-01-01'"
+recent_expenditures <- read.socrata(url)
+
+# question 2 
+url <- "https://mydata.iowa.gov/resource/3adi-mht4.json?$select=committee_nm,amount&$where=amount>'25000'"
+big_expenditures <- read.socrata(url)
+
+#question 3 
+url <- "https://mydata.iowa.gov/resource/3adi-mht4.json?$select=committee_nm,amount,date&$where=amount>'25000'"
+combine_expenditures <- read.socrata(url)
+final_data <- combine_expenditures[combine_expenditures$date>'2023-01-01', ]
+final_data$date <- NULL 
