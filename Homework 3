@@ -1,0 +1,124 @@
+# gavin Kafkakis 3.25.24 Homework 3 
+
+rm(list=ls())
+
+
+#question 1 
+team_names <- character(0)
+team_years <- character(0)
+team_wins <- character(0)
+team_losses <- character(0)
+
+user_agent <- "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+
+for (i in 1:6){
+  print(i)
+  #  for (i in 1:1){
+  #   current_page <- "https://www.scrapethissite.com/pages/forms/?per_page=100"
+  #   page <- read_html(current_page, user_agent)
+  # } 
+  # for (i in 2:6){
+    current_page <- paste("https://www.scrapethissite.com/pages/forms/?page_num=", i, "&per_page=100", sep="")
+    page <- read_html(current_page, user_agent)
+  # }
+  value <- 1
+  Sys.sleep(value)
+  page_team <- xml_text(xml_find_all(page, "//table[@class='table']//tr[@class='team']//td[@class='name']"))
+  
+  team_names <- c(team_names, page_team)
+  
+  page_year <- xml_text(xml_find_all(page, "//table[@class='table']//tr[@class='team']//td[@class='year']"))
+  
+  team_years <- c(team_years, page_year)
+  
+  page_wins <- xml_text(xml_find_all(page, "//table[@class='table']//tr[@class='team']//td[@class='wins']")) 
+  
+  team_wins <- c(team_wins, page_wins) 
+  
+  page_losses <- xml_text(xml_find_all(page, "//table[@class='table']//tr[@class='team']//td[@class='losses']"))
+  
+  team_losses <- c(team_losses, page_losses)
+  
+  random_value <- sample(2:6, 1)
+  print(paste("waiting ", random_value, " seconds"))
+  Sys.sleep(random_value)
+  
+  print("moving onto next loop")
+}
+team_years
+team_names
+team_names <- trimws(gsub("/n", "", team_names))
+team_years <- trimws(gsub("/n", "", team_years))
+team_losses <- trimws(gsub("/n", "", team_losses))
+team_wins <- trimws(gsub("/n", "", team_wins))
+
+nhl_df <- data.frame(team_names, team_years, team_wins, team_losses) 
+
+#question 2 
+nhl_df$team_names <- trimws(nhl_df$team_names)                        
+nhl_df$team_wins <- trimws(nhl_df$team_wins)                        
+nhl_df$team_years <- trimws(nhl_df$team_years)
+nhl_df$team_losses <- trimws(nhl_df$team_losses)
+
+nhl_df$team_years <- as.integer(nhl_df$team_years)
+nhl_df$team_wins <- as.integer(nhl_df$team_wins)
+nhl_df$team_losses <- as.integer(nhl_df$team_losses) 
+
+
+
+
+#question 3 
+nhl_add <- read.csv("nhl_2012-2021.csv")
+
+colnames(nhl_add) <- unlist(nhl_add[1, ])
+
+nhl_add <- nhl_add[-1, ]
+
+nhl_add$Team <- gsub("\\*", "", nhl_add$Team)
+
+nhl_extra_data <- data.frame(nhl_add$Team, nhl_add$Season, nhl_add$W, nhl_add$L)
+
+names(nhl_extra_data)[names(nhl_extra_data) == "nhl_add.Team"] <- "team_names"
+names(nhl_extra_data)[names(nhl_extra_data) == "nhl_add.Season"] <- "team_years"
+names(nhl_extra_data)[names(nhl_extra_data) == "nhl_add.W"] <- "team_wins"
+names(nhl_extra_data)[names(nhl_extra_data) == "nhl_add.L"] <- "team_losses"
+
+nhl_extra_data$team_years <- as.integer(nhl_extra_data$team_years)
+nhl_extra_data$team_wins <- as.integer(nhl_extra_data$team_wins)
+nhl_extra_data$team_losses <- as.integer(nhl_extra_data$team_losses)
+
+nhl2 <- rbind(nhl_df, nhl_extra_data)
+
+nhl2$win_percentage <- nhl2$team_wins / (nhl2$team_losses + nhl2$team_wins) 
+
+#question 4 
+nhl_arenas <- read.csv("nhl_hockey_arenas.csv")
+
+names(nhl_arenas)[names(nhl_arenas) == "Team.Name"] <- "team_names"
+names(nhl_arenas)[names(nhl_arenas) == "Arena.Name"] <- "Arena"
+names(nhl_arenas)[names(nhl_arenas) == "Arena.Location"] <- "Location"
+names(nhl_arenas)[names(nhl_arenas) == "Seating.Capacity"] <- "Capacity"
+
+nhl_arenas$Opening.Year <- NULL 
+
+unique(nhl2$team_names)
+unique(nhl3$team_names)
+
+nhl2$team_names <- gsub("Mighty Ducks of Anaheim", "Anaheim Ducks", nhl2$team_names)
+
+nhl2$team_names <- gsub("Seattle Kraken", "Seattle Kracken", nhl2$team_names)
+
+nhl3 <- merge(nhl2, nhl_arenas, by.x = "team_names", by.y = "team_names", all.x = TRUE)
+
+nhl3 <- subset(nhl3, !(nhl3$team_names == "New York Islanders" & nhl3$team_years >= 2015 & 
+                            nhl3$Arena == "Nassau Coliseum")) 
+
+nhl3 <- subset(nhl3, !(nhl3$team_names == "New York Islanders" & nhl3$team_years < 2015 & 
+                         nhl3$Arena == "Barclays Center")) 
+
+names(nhl3)[names(nhl3) == "team_names"] <- "Team"
+names(nhl3)[names(nhl3) == "team_years"] <- "Year"
+names(nhl3)[names(nhl3) == "team_wins"] <- "Wins"
+names(nhl3)[names(nhl3) == "team_losses"] <- "Losses"
+#question 5 
+write.csv(nhl3, file = "hockey_data.csv")
