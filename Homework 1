@@ -1,0 +1,59 @@
+# Gavin Kafkakis 2.6.24 Homework1
+
+# different types of techniques and things learned early 
+rm(list=ls())
+
+#question 1
+a <- 8 
+
+heart <- a^2 + pi * (a/2)^2
+heart
+
+
+# question 2 
+rent <- matrix(c(784, 902, 1793, 1747, 1147, 1171, 1229, 1261), nrow = 2)
+colnames(rent) <- c("Iowa", "Illinois", "Wisconsin", "Minnesota")
+rownames(rent) <- c("2019", "2020")
+
+avg_rent <- rowMeans(rent)
+avg_rent
+
+iowa_change <- (rent[1] - rent[2]) / rent[1]
+iowa_change <- abs(iowa_change) * 100 
+iowa_change
+
+
+#question 3 
+install.packages("mosaicData")
+data(Births2015)
+View(Births2015)
+
+first_birth <- Births2015$date[1]
+last_birth <- Births2015$date[365]
+days <- last_birth - first_birth
+days
+
+sundays <- subset(Births2015, wday == 'Sun')
+sundays <- subset(sundays, month == '1')
+sundays <- sum(sundays$births)
+sundays
+
+april <- subset(Births2015, month == '4')
+write.csv(april, file = "april_births.csv")
+
+
+#question 4 
+install.packages("carData")
+library(carData)  
+data(States)  
+
+Iowa_salary <- subset(States, pop == 2777)
+Iowa_salary <- Iowa_salary$pay
+
+low_spending <- subset(States, dollars < 4)
+low_spending
+
+sat_states <- subset(States, percent > 60)
+sat_states <- subset(sat_states, region != 'NE')
+sat_states
+
