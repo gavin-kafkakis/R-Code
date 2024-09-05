@@ -1,0 +1,48 @@
+# gavin kafkakis 4.3.24
+
+rm(list=ls())
+
+ab <- read.csv("a-b_test_with_datetime.csv")
+
+# question a 
+ab_total <- table(ab$Group)
+ab_total
+# a and b both have the same amount of entries 
+
+#question b 
+a <- subset(ab, ab$Group== "A")
+b <- subset(ab, ab$Group=="B")
+max(a$Datetime)
+min(a$Datetime)
+
+max(b$Datetime)
+min(b$Datetime)
+
+# a and b both have the same ranges of the datetime column 
+
+#question c 
+# i think that group b will be the one that will win 
+
+#question d 
+mean_a <- mean(a$CTR)
+mean_a
+mean_b <- mean(b$CTR)
+mean_b
+
+#group b has a larger mean 
+
+#question e
+#the null hypotehesis of this test is whether group a or b would be better, and whether or not 
+# we would reject or fail to reject the results 
+
+# question f 
+t.test(a$CTR)
+t.test(b$CTR)
+
+# question g 
+# yes the results show that the results are statistically significant 
+
+# question h 
+# it is showing that group b won the test 
+
+
