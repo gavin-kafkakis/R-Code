@@ -1,0 +1,53 @@
+# Leaning the basics of R and about how to find some basic databases and then use basic commands of R 
+# islands database, question 1 
+library(datasets)
+
+#question 1
+data(islands)
+# View(islands)
+
+#question 2
+japan <- islands[c("Honshu", "Hokkaido", "Kyushu")]
+
+# big_islands <- islands[which(islands>200 & islands < 500)]  
+# names(big_islands) 
+
+#question 3
+medium_islands <- islands[which(islands > 50 & islands < 100)]
+medium_islands
+
+#question 4 
+top_3 <- sort(islands, decreasing = TRUE) [1:3]
+top_3_names <- names(top_3)
+top_3_names
+
+#question 5 
+canada <- islands[c("Vancouver", "Southampton", "Newfoundland", "Ellesmere", "Devon", "Banks", "Victoria", "Baffin")]
+canada <- sum(canada)
+canada
+
+
+install.packages("palmerpenguins")
+library(palmerpenguins)
+data(penguins)
+View(penguins)
+
+#question 1 and 2
+dim(penguins) # tells the number of rows and columns 
+
+#question 3
+colnames(penguins)
+
+#question 4 
+str(penguins) # can see what type of data that each column is 
+
+#question 5 
+penguins$species
+
+#question 6 
+unique(penguins$species)
+
+#question 7 
+penguins_factor <- factor(penguins$species)
+penguins_factor
+
