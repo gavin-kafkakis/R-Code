@@ -1,0 +1,44 @@
+#gavin kafkakis 3.31.24
+# reading files into R and then being able to do analysis on them to see the relationships that can be found 
+rm(list=ls())
+
+students <- read.csv("student_data.csv")
+students$Major <- gsub("Business Analytics & Information Systems", "BAIS", students$Major)
+students$Year_In_School <- as.factor(students$Year_In_School)
+students$Major <- as.factor(students$Major)
+str(students)
+#question 1 
+students_majors <- table(students$Major)
+students_majors
+students_prop <- prop.table(table(students$Major))
+students_prop
+
+# management is the smallest major, while economics is the largest major 
+
+barplot(students_prop, main = "Students in Major", ylab = "Frequency", las = 2)
+
+#quesion 2 
+GPA_median <- median(students$GPA)
+GPA_median
+
+GPA_variance <- var(students$GPA)
+GPA_variance
+
+boxplot(students$GPA, main = "Students GPA")
+
+#question 3 
+major_by_year <- table(students$Major, students$Year_In_School)
+major_by_year
+
+fourth_year_major <- prop.table(table(students$Major, students$Year_In_School))[,4]
+fourth_year_major
+
+#question 4 
+GPA_income_cor <- cor(students$GPA, students$Income)
+GPA_income_cor
+
+GPA_income_cortest <- cor.test(students$GPA, students$Income)
+GPA_income_cortest
+
+# With the p value being 0.1578, it is greater than 0.05 or our threshold which would mean that the two variables, 
+# GPA and income, do not have a significant relationship. 
