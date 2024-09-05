@@ -1,0 +1,82 @@
+#gavin kafkakis exam 2 4.8.24
+
+# Exam code using all of the knowledge learned throughout the class
+rm(list=ls())
+
+#question 1 
+states_raw <- read.csv("states.csv")
+midwest <- read.csv("midwest.csv")
+
+names(midwest)[names(midwest)=="Colleges"] <- "Universities"
+midwest$State_Tree <- NULL
+
+midwest$Region <- "Midwest"
+
+states <- rbind(states_raw, midwest)
+
+#question 2 
+pet_politics <- table(states$Top_Pet, states$Governor)
+pet_politics
+
+chisq.test(pet_politics)
+#theres seems to not be a relationship between our two variables of pets and governors.  This is due to the fact 
+# that our p-value for these variables is 0.4298 which is well above our threshold of 0.05.  This shows that 
+# we can reject the hypothesis and therefore show that there is not much of relationship between these two variables.
+
+pet_population <- tapply(states$Population, states$Top_Pet, sum)
+
+barplot(pet_population, xlab = "Favorite Pet", ylab = "Total Population (Millions)", col = "orange",
+          main = "Favorite Pet in the U.S. Grouped by Population", ylim = c(0,140)) 
+
+
+#question 3 
+rankings <- read.csv("rankings.txt", sep = "#")
+
+state_ranking <- merge(states, rankings, by.x = "State", by.y = "State_Name")
+
+#question 4 
+states_grouped <- group_by(state_ranking, Region)
+
+average_region <- summarize(states_grouped, Score = mean(Overall_Score), count(states_grouped$State))
+
+#question 5 
+#part a 
+qplot(Happiness_Score, Diversity_Score, data=state_ranking, 
+      geom = "point", color = Happiness_Score) + xlim(c(25,75)) + ylim(c(55,75))
+
+cor.test(state_ranking$Happiness_Score, state_ranking$Diversity_Score)
+# when looking at the correlation test we can see that there is not much of a correlation at all if any it 
+# would be more of a positively correlation.  Our correlation value is 0.30 which is not a strong correlation, 
+# but would be positive, and when looking at our graph we can see that it shows as more psoitive.  But also can 
+# see with the graph that the correlation between the two of them is not very strong.  
+
+#part b 
+score_model <- lm(Overall_Score~Percent_Poverty+Universities+Covid_Rate+Diversity_Score+
+                    Beach, data=state_ranking)
+summary(score_model)
+# it looks like for this problem that covid rate and diversity score are our most signiificant variables and universities 
+# is somewhat significant as it is right outside of our threshold.  When looking at our significant variables it 
+# looks like covid rate will have a negative impact on our overall score and that the diversity score will
+# have a very big impact on our score as for an increase in that it goes up by almost 1.  
+
+
+# part c 
+state_ranking$Republican_Binary <- ifelse(state_ranking$Republican_Score >= 50, 1, 0)
+
+republican_model <- glm(Republican_Binary~Density+Incarceration_Rate+Governor, data=state_ranking)
+summary(republican_model)
+# In this model the density and the governor being republican are significant varibles for this model.  
+# The p values for both of those variables are both under the 0.05 threshold showing that they are significant 
+# variables for predicting if they over 50 republican.  The density has a negative impact on the binary variable
+# and the governor has a very postitive impact on the target. 
+
+
+state_ranking$Beach_Binary <- ifelse(state_ranking$Beach == "TRUE", 1, 0)
+
+beach_model <- glm(Beach_Binary~Density+Happiness_Score+Minimum_Wage+Diversity_Score, data=state_ranking)
+summary(beach_model)
+
+# the density score is the only variable that has a significant impact on if the state has a beach.  This is 
+# due to it being the only variable being below the 0.05 threshold for the p value.  With its coefficent being 
+# positive it has a positive impact on if the state has the chance of having a beach. 
+
