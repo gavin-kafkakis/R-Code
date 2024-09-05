@@ -1,0 +1,102 @@
+# Gavin Kafkaks 2/19/24
+
+rm(list=ls())
+
+#question 1 
+# part a
+city_budgets <- read.csv("City_Budget_and_Actual_Expenditures.csv")
+
+#part b 
+fy21 <- city_budgets[which(city_budgets$Fiscal.Year == '2021'),]
+
+duplicates <- sum(duplicated(fy21))
+
+cols <- c("Fiscal.Year", "County", "City.Name", "Budget", "Actual")
+
+fy21 <- fy21[, cols]
+
+write.csv(fy21, file = "fy21_city_budget_actual_expenses.csv")
+
+# part c 
+city_budgets_2021 <- read.csv("fy21_city_budget_actual_expenses.csv")
+
+city_budgets_2021 <- subset(city_budgets_2021, select = -c(X))
+
+str(city_budgets_2021) 
+
+city_budgets_2021$City.Name <- as.factor(city_budgets_2021$City.Name)
+city_budgets_2021$County <- as.factor(city_budgets_2021$County)
+
+city_budgets_2021 <- clean_names(city_budgets_2021, "screaming_snake")
+
+city_budgets_missing <- is.na(city_budgets_2021)
+sum(city_budgets_missing)
+
+write.csv(city_budgets_2021, file = "fy21_city_budget_actual_expenses-Cleaned.csv")
+
+city_cleaned <- read.csv("fy21_city_budget_actual_expenses-Cleaned.csv")
+city_cleaned <- subset(city_cleaned, select = -c(X))
+
+#question 2 
+sum(duplicated(city_cleaned))
+#question 3
+county_count <- unique(city_cleaned$COUNTY)
+county_count <- length(county_count)
+county_count
+#question 4 
+city_count <- unique(city_cleaned$CITY_NAME)
+city_count <- length(city_count)
+city_count
+#question 5 
+qty_fy <- unique(city_cleaned$FISCAL_YEAR)
+qty_fy <- length(qty_fy) 
+qty_fy
+fiscal_year <- unique(city_cleaned$FISCAL_YEAR)
+fiscal_year
+#question 6 
+library(tidyverse)
+library(janitor)
+library(dplyr)
+consolidated_cities <- city_cleaned %>% group_by(FISCAL_YEAR,CITY_NAME, COUNTY) %>% summarise(sum_budget = sum(BUDGET), sum_actual=sum(ACTUAL))
+#question 7 
+cities_in_cleaned <- unique(city_cleaned$CITY_NAME)
+cities_in_cleaned <- length(cities_in_cleaned)
+cities_in_cleaned
+cities_in_collapsed <- unique(consolidated_cities$CITY_NAME)
+cities_in_collapsed <- length(cities_in_collapsed)
+cities_in_collapsed
+
+cleaned_ackley_budget <- city_cleaned[which(city_cleaned$CITY_NAME == "ACKLEY"), ]
+cleaned_ackley_budget <- sum(cleaned_ackley_budget$BUDGET)  
+cleaned_ackley_budget  
+
+collapsed_ackley_budget <- consolidated_cities[which(consolidated_cities$CITY_NAME == "ACKLEY"),]
+collapsed_ackley_budget <- collapsed_ackley_budget$sum_budget                                               
+collapsed_ackley_budget  
+  
+cleaned_ackley_actual <- city_cleaned[which(city_cleaned$CITY_NAME == "ACKLEY"), ]
+cleaned_ackley_actual <- sum(cleaned_ackley_actual$ACTUAL)
+cleaned_ackley_actual  
+  
+collapsed_ackley_actual <- consolidated_cities[which(consolidated_cities$CITY_NAME == "ACKLEY"),]
+collapsed_ackley_actual <- collapsed_ackley_actual$sum_budget                                               
+collapsed_ackley_actual 
+
+#question 7 
+consolidated_cities$difference_budget_actual <- consolidated_cities$sum_budget
+consolidated_cities$difference_budget_actual <- consolidated_cities$sum_budget - 
+  consolidated_cities$sum_actual
+
+lowest_difference <- consolidated_cities
+lowest_difference <- lowest_difference[order(lowest_difference$difference_budget_actual
+                                            ,decreasing = FALSE),]
+lowest_difference <- subset(lowest_difference, select = -c(FISCAL_YEAR, sum_budget, sum_actual))
+lowest_difference <- head(lowest_difference, 10)
+
+highest_difference <- consolidated_cities
+highest_difference <- highest_difference[order(highest_difference$difference_budget_actual
+                                              ,decreasing = TRUE),]
+highest_difference <- subset(highest_difference, select = -c(FISCAL_YEAR, sum_budget, sum_actual))
+highest_difference <- head(highest_difference, 10)
+
+
