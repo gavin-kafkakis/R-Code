@@ -1,0 +1,142 @@
+#gavin kafkakis 4.23.24 homework 4 
+
+rm(list=ls())
+
+#question 1 
+revenueForecast <- read.csv("RevenueForecast.csv")
+
+revenueTS <- ts(revenueForecast$Revenue, start=c(1992, 1), end = c(2018, 12), frequency = 12)
+
+columns<- c("Technique","MAE")
+forecast_df <- data.frame((matrix(nrow = 0, ncol = length(columns))) )
+colnames(forecast_df) <- columns
+
+#naive 
+RF_naive <- naive(revenueTS, h=12)
+errors <- accuracy(RF_naive)
+errors[,'MAE']
+forecast_df[nrow(forecast_df) + 1,] = list("Naive",errors[,'MAE'])
+
+#weighted moving average 
+for (i in 2:12) {
+  order_amount <- i 
+  MA_RF <- ma(revenueTS, order = order_amount)
+  MA_revnue <- forecast(MA_RF, h = 12)
+  errors <- accuracy(MA_revnue)
+  errors[,'MAE']
+  stringMA <- paste(order_amount,"month moving average", sep= " ") 
+  forecast_df[nrow(forecast_df) + 1,] = list(stringMA,errors[,'MAE'])
+} 
+
+# smoothing 
+smoothing_amount <- 0.1
+for (i in 1:9) {
+  RF_smoothing <- ses(revenueTS, h=12, alpha = smoothing_amount)
+  errors <- accuracy(RF_smoothing)
+  errors[,'MAE']
+  string_smoothing <- paste("ExpSmoothing Alpha = ", smoothing_amount)
+  forecast_df[nrow(forecast_df) + 1,] = list(string_smoothing,errors[,'MAE'])
+  smoothing_amount <- smoothing_amount + 0.1
+} 
+
+# holt 
+revenue_holt <- holt(revenueTS, h= 12)
+errors <- accuracy(revenue_holt)
+forecast_df[nrow(forecast_df) + 1,] = list("Trend",errors[,'MAE'])
+
+#holt winters 
+revenue_winters <- hw(revenueTS, seasonal = "additive", h = 12)
+errors <- accuracy(revenue_winters)
+forecast_df[nrow(forecast_df) + 1,] = list("Seasonal+Trend Additive",errors[,'MAE'])
+autoplot(revenue_winters)
+# the holt winters was able to really showcase the trends that was coming before it with the way 
+# it was able to read and forecast the data.  It seems that there is an upward trend that can be seen in the data. 
+
+
+revenue_multip <- hw(revenueTS, seasonal = "multiplicative", h = 12)
+errors <- accuracy(revenue_multip)
+forecast_df[nrow(forecast_df) + 1,] = list("Seasonal+Trend Multiplicative",errors[,'MAE'])
+
+forecast_df <- forecast_df[order(forecast_df$MAE, decreasing = FALSE), ]
+
+# best model which was the 12 month moving average 
+Best_MAE <- ma(revenueTS, order = 12, centre = FALSE)
+Best_Forecast <- forecast(Best_MAE, h = 12)
+autoplot(Best_Forecast)
+
+# csv file 
+write.csv(file = "Forecasting_MAE_Pharmacy_Revenue.csv", forecast_df)
+
+
+#question 2 
+lyrics <- read.csv("all_lyrics.csv")
+lyrics
+lyrics_corpus <- Corpus(VectorSource(lyrics))
+
+ctrl <- list(removePunctuation=TRUE, removeNumbers=TRUE, stopwords=TRUE, wordlenghts=c(5,100)) 
+lyrics_dtm <- DocumentTermMatrix(lyrics_corpus, control = ctrl)
+matrix <- as.matrix(lyrics_dtm) 
+words <- sort(colSums(matrix),decreasing=TRUE) 
+word_freq <- data.frame(word = names(words),freq=words)
+
+# the data fram for most used words 
+word_freq_df <- data.frame(word = word_freq$word, freq = word_freq$freq)
+word_freq_df <- word_freq_df[order(word_freq_df$freq, decreasing = TRUE), ]
+word_freq_df <- head(word_freq_df, 15)
+
+
+freq<-colSums(as.matrix(dtm))
+
+#word cloud 
+wordcloud(names(freq), # Vector of terms
+          freq, # Vector of frequencies
+          min.freq = 50, # Minimum frequency
+          colors=brewer.pal(8, "Dark2"))
+
+
+
+# question 3 
+song_lyrics <- as.character(lyrics_corpus) 
+song_lyrics <- gsub("\\[.*?\\]", "", song_lyrics) 
+song_lyrics <- gsub("\\d{1,}.(Embed)", "", song_lyrics) 
+song_lyrics <- song_lyrics[nzchar(song_lyrics)] 
+song_lyrics <- gsub("\\\"", "", song_lyrics)
+song_lyrics <- trimws(song_lyrics) 
+
+lyrics_sentences <- get_sentences(song_lyrics)
+emotions <- get_nrc_sentiment(song_lyrics)
+
+sentence_sentiment_vector <- get_sentiment(lyrics_sentences, method = "syuzhet")
+sentence_sentiment_vector
+
+sentence_sentiment_df <- data.frame(lyric = lyrics_sentences, sentiment = sentence_sentiment_vector)
+
+emo_bar <- colSums(emotions)
+emo_bar
+emo_sum <- data.frame(count=emo_bar, emotion=names(emo_bar))
+emo_sum
+emo_sum_sentiment <- emo_sum[c(1:8),]
+emo_sum_sentiment
+emo_sum_sentiment <- emo_sum_sentiment[order(emo_sum_sentiment$count, decreasing = TRUE), ]    
+emo_sum_sentiment <- emo_sum[c(1:6),]
+emo_sum_sentiment <- as.data.frame(emo_sum_sentiment)
+
+# bar graph 
+ggplot(data = emo_sum_sentiment) +
+  aes(x=reorder(emotion, -count), y=count, fill=emotion) + 
+  geom_bar(stat="identity") + 
+  geom_text(aes(label=count), size=2.75,vjust=-0.4) + 
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5)) + 
+  ggtitle("Taylor Swift Lyrics") +
+  theme(legend.position="none")
+
+# sentiment valence graph
+sentiment_valence <- (midnights_sentiment_scores$negative *-1) + midnights_sentiment_scores$positive
+sentiment_valence
+
+simple_plot(sentiment_valence)
+
+
+
+
