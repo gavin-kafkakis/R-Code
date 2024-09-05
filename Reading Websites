@@ -1,0 +1,83 @@
+rm(list=ls())
+
+#reading websites and then bringing that table and information into the R file to be able to go through and then look through the table in R 
+library(xml2)
+
+user_agent <- "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+
+all_url <- character(0)
+all_star <- character(0)
+all_price <- character(0)
+all_availability <- character(0)
+
+
+for (i in 1:10){
+  print(i)
+  for (i in 1:1){
+    current_page <- "https://books.toscrape.com/"
+    page <- read_html(current_page, user_agent)
+  } 
+  for (i in 2:10){ 
+    current_page <- paste("https://books.toscrape.com/catalogue/page-", i, ".html", sep="") 
+    page <- read_html(current_page, user_agent)
+  } 
+  # reading the page 
+  
+  #doing the different variables 
+  page_url <- xml_attr(xml_find_all(page, "//article[@class = 'product_pod']/h3/a"), "href")
+   # page_url <- paste("books.toscrape.com/catalogue/", page_url, sep="") 
+  
+  all_url <- c(all_url, page_url) 
+  
+  page_star <- xml_attr(xml_find_all(page, "//article[@class='product_pod']/p"), "class") 
+  all_star <- c(all_star, page_star) 
+  
+  page_price <- xml_text(xml_find_all(page, "//article[@class='product_pod']//div[@class='product_price']//
+                                      p[@class='price_color']")) 
+  all_price <- c(all_price, page_price) 
+  
+  page_availability <- xml_text(xml_find_all(page,"//article[@class='product_pod']//div[@class='product_price']//
+                                      p[@class='instock availability']"))
+  all_availability <- c(all_availability, page_availability)
+  
+  #letting a random number allow for a break 
+  random_value <- sample(2:6, 1)
+  print(paste("waiting ", random_value, " seconds"))
+  Sys.sleep(random_value)
+  
+  print("moving onto next loop")
+}
+
+length(all_availability)
+length(all_price)
+length(all_star)
+length(all_url)
+all_url
+all_star
+all_availability
+
+books_df <- data.frame(all_url, all_price, all_star, all_availability) 
+write.csv(books_df, file = "books.csv")
+
+#question 2 
+books_edited <- books_df
+books_edited$all_url <- paste("books.toscrape.com/catalogue/", all_url, sep="") 
+
+books_edited$all_star <- gsub("star-rating One", 1, books_edited$all_star)
+books_edited$all_star <- gsub("star-rating Two", 2, books_edited$all_star)
+books_edited$all_star <- gsub("star-rating Three", 3, books_edited$all_star)
+books_edited$all_star <- gsub("star-rating Four", 4, books_edited$all_star)
+books_edited$all_star <- gsub("star-rating Five", 5, books_edited$all_star)
+
+books_edited$all_star <- as.numeric(books_edited$all_star)
+str(books_edited)
+
+books_edited$all_price <- gsub("£", "", books_edited$all_price)
+books_edited$all_price <- as.numeric(books_edited$all_price)
+colnames(books_edited)[colnames(books_edited) == "all_price"] <- "price_pounds"
+
+
+books_edited$all_availability <- trimws(books_edited$all_availability)
+
+write.csv(books_edited, file = "books_edited.csv")
+
