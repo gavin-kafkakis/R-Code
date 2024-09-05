@@ -1,0 +1,28 @@
+# gavin kafkakis 3.27.24
+
+all_state <- read.csv("allstate.txt")
+
+#question 1 
+summary(all_state)
+# within car age for this summary we can see that we have some upper outliers as 25 percent of our upper data 
+# is going to be located between 11 and 74.  What we can also see is that a lot of our data is going to be around 
+# the same age area which could be good for our problems we need to solve as 75 percent is between 0 and 11.  
+library(ggplot2)
+qplot(car_age, data = all_state, geom = "histogram",
+     binwidth = 1, xlab = "Car Age", main = "Age Histogram")
+
+# question 2 
+str(all_state)
+cor_test <- cor(all_state$car_age, all_state$cost)
+cor_test
+fit <- lm(cost~car_age+car_value, data = all_state)
+summary(fit)
+
+# with the distribution of the car age, we can see that most of our age is going to be located right around that year 5, 
+# we can also see that there are a couple of outliners, but once we get past 20, the amount of cars will decrease. This would 
+# mean that the graph would be right skewed as most of our data will be on the left side of our graph.  
+# within our linear model we can see that there is first a negative correlation between car age and the cost 
+# of the car.  With our linear model we see that our formula would be equal to y = 703.1559 - 2.2639(age) - our car value 
+# this means that with every increase in one year we lose 2.2639 dollars off of our cost.  
+
+
