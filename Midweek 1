@@ -1,0 +1,27 @@
+# Gavin Kafkakis 1/31/24
+
+rm(list=ls())
+
+gkafkakis <- read.csv("allstate.txt")
+
+#question c
+top_6 <- head(gkafkakis)
+top_6
+
+#question d 
+top_10 <- sort(gkafkakis$cost, decreasing = TRUE) [1:10]
+top_10
+
+#question e 
+summary(gkafkakis)
+
+#question f 
+average <- mean(gkafkakis$cost)
+average
+
+#question g 
+oldcar <- gkafkakis[which(gkafkakis$car_age > 20),]
+oldcar
+
+#question h 
+write.csv(oldcar, "old_car.csv")
