@@ -1,0 +1,74 @@
+#gavin kafkakis 4.12.24
+# different forecasting methods 
+rm(list=ls())
+
+college <- read.csv("home_price_index.csv")
+college$City <- as.factor(college$City)
+college$Date <- as.Date(college$Date)
+library(ggplot2)
+
+qplot(Date, Value,data = college, geom = "line", col=City, main = "House Price Index City Comparison", ylab = "Home Price Index")
+
+ames <- subset(college, City == "Ames")
+corvallis <- subset(college, City == "Corvallis")
+
+price_ames <- ts(ames$Value, start=c(1977,1), end=c(2017,4), frequency= 4)
+price_corvallis <- ts(corvallis$Value, start=c(1977, 1), end=c(2017,4), frequency = 4)
+
+columns<- c("Technique","MAE")
+forecast_df <- data.frame((matrix(nrow = 0, ncol = length(columns))) )
+
+#moving average forecasts 
+ames_ma <- ma(price_ames, order = 3)
+ames_forecastMA <- forecast(ames_ma, h=8)
+autoplot(ames_forecastMA)
+errors <- accuracy(ames_forecastMA)
+forecast_df[nrow(forecast_df) + 1,] = list("Ames Moving Average",errors[,'MAE'])
+
+corvallis_ma <- ma(price_corvallis, order = 3)
+corrvallis_forcastMA <- forecast(corvallis_ma, h=8)
+autoplot(corrvallis_forcastMA)
+errors <- accuracy(corrvallis_forcastMA)
+forecast_df[nrow(forecast_df) + 1,] = list("Corvallis Moving Average",errors[,'MAE'])
+
+#exponential smoothing forecasts 
+ames_smoothing <- ses(price_ames, h=8, alpha = 0.7)
+autoplot(ames_smoothing)
+errors <- accuracy(ames_smoothing)
+forecast_df[nrow(forecast_df) + 1,] = list("Ames Expontial Smoothing",errors[,'MAE'])
+
+corvallis_smoothing <- ses(price_corvallis, h=8, alpha = 0.7)
+autoplot(corvallis_smoothing)
+errors <- accuracy(corvallis_smoothing)
+forecast_df[nrow(forecast_df) + 1,] = list("Corvallis Expontial Smoothing",errors[,'MAE'])
+
+#holt method (trend) forecasts 
+ames_holt <- holt(price_ames, h=8)
+autoplot(ames_holt)
+errors <- accuracy(ames_holt)
+forecast_df[nrow(forecast_df) + 1,] = list("Ames Holt",errors[,'MAE'])
+
+corvallis_holt <- holt(price_corvallis, h=8)
+autoplot(corvallis_holt)
+errors <- accuracy(corvallis_holt)
+forecast_df[nrow(forecast_df) + 1,] = list("Corvallis Holt",errors[,'MAE'])
+
+#holt winters method 
+ames_hw <- hw(price_ames, h=8, seasonal = "multiplicative")
+autoplot(ames_hw)
+errors <- accuracy(ames_hw)
+forecast_df[nrow(forecast_df) + 1,] = list("Ames Holt Winters",errors[,'MAE'])
+
+corvallis_hw <- hw(price_corvallis, h=8, seasonal = "multiplicative")
+autoplot(corvallis_hw)
+errors <- accuracy(corvallis_hw)
+forecast_df[nrow(forecast_df) + 1,] = list("Corvallis Holt Winters",errors[,'MAE'])
+
+View(forecast_df)
+
+# the moving average has the lowest MAE for both Ames and Corvallis out of all of the forecasts that were done
+
+
+
+
+
