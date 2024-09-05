@@ -1,0 +1,34 @@
+# learning how to write onto tables and then creating new csv files to take out of R 
+rm(list=ls())
+
+# question 1 
+juniors <- grades[which(grades$Year == 'Junior'),]
+
+write.csv(juniors, file = "juniors.csv")
+
+
+# question 2 
+gpa <- readLines("gpa.txt")
+
+gpa <- as.numeric(gpa)
+
+under3_gpa <- length(which(gpa < 3))
+
+
+top_ten <- sort(gpa, decreasing = TRUE) [1:10]
+top_ten
+
+write.csv(top_ten, file = "high_gpa.txt")
+
+
+#question 3 
+abc1 <- read.csv("abc_local_radio.csv")
+abc2 <- read.csv("abc_local_radio.csv", na.strings = c("NA", "", " "))
+
+se_australia <- subset(abc2, State == "VIC" | State == "NSW") 
+
+se_australia <- subset(se_australia, !is.na(Twitter))
+
+se_australia <- subset(se_australia, select = c("State", "Station", "Twitter"))
+
+write.csv(se_australia, file = "se_australia.txt", row.names = FALSE)
