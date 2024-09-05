@@ -1,0 +1,92 @@
+rm(list=ls())
+
+# first exam that tested the first big amount of R knowledge 
+#question 1 
+hbcu <- read.csv("BAIS3250_exam1_hbcu.txt", sep = ";", na.strings = c("NA", "", " ", "N/A"), encoding = "UTF-8", 
+                 stringsAsFactors = TRUE)
+#question 2 
+str(hbcu)
+hbcu$earnings_edited <- hbcu$earnings
+hbcu$earnings_edited <- gsub(",", "", hbcu$earnings_edited)
+
+hbcu <- subset(hbcu, select = -c(earnings))
+#part b 
+str(hbcu)
+#part c 
+library(dplyr)
+hbcu <- hbcu %>%
+  group_by(state) %>%
+  mutate(median_math = median(math, na.rm = TRUE))
+hbcu$math <- ifelse(is.na(hbcu$math), hbcu$median_math, hbcu$math)
+hbcu$math <- ifelse(is.na(hbcu$math), median(hbcu$math, na.rm = TRUE), hbcu$math)
+hbcu <- hbcu %>%
+  group_by(state) %>%
+  mutate(median_verbal = median(verbal, na.rm = TRUE))
+hbcu$verbal <- ifelse(is.na(hbcu$verbal), hbcu$median_verbal, hbcu$verbal)
+hbcu$verbal <- ifelse(is.na(hbcu$verbal), median(hbcu$verbal, na.rm = TRUE), hbcu$verbal)
+
+hbcu <- subset(hbcu, select = -c(median_math, median_verbal))
+
+sum(is.na(hbcu$math))
+sum(is.na(hbcu$verbal))
+median_math <- median(hbcu$math)
+
+median_verbal <- median(hbcu$verbal)
+
+# part d 
+hbcu <- hbcu[rowSums(is.na(hbcu)) == 0, ]
+
+library(jsonlite)
+stream_out(hbcu, file("hbcu_edited.json"))
+
+# question 3 
+hbcu_edited <- stream_in(file("hbcu_edited.json")) 
+
+# part a 
+hbcu_edited$n_s <- hbcu$id
+hbcu_edited$e_w <- hbcu$id
+
+hbcu_edited$n_s <- ifelse(hbcu_edited$latitude > 36.3, "North", "South")
+hbcu_edited$e_w <- ifelse(hbcu_edited$longitude < -90.2, "West", "East")
+
+hbcu_edited$region <- paste(hbcu_edited$n_s, hbcu_edited$e_w, sep = "")
+
+hbcu_edited$region <- str_to_title(hbcu_edited$region)
+
+table(hbcu_edited$region)
+
+#part b 
+
+monthly_interest <- .05/12
+number_of_periods <- 180
+
+hbcu_edited$monthly_pmt <- (hbcu_edited$debt * monthly_interest) / 
+  (1 - (1 + monthly_interest) ^ -number_of_periods)
+hbcu_edited$monthly_pmt <- round(hbcu_edited$monthly_pmt, 2)
+
+#question 4 
+#part a 
+
+public_religious <- sum(hbcu_edited$type == "Public" & hbcu_edited$religious == "TRUE")
+public_not_religious <- sum(hbcu_edited$type == "Public" & hbcu_edited$religious == "FALSE")
+private_religious <- sum(hbcu_edited$type == "Private" & hbcu_edited$religious == "TRUE")
+private_not_religious <- sum(hbcu_edited$type == "Private" & hbcu_edited$religious == "FALSE")
+
+type_vs_religion <- matrix(c(public_religious, public_not_religious, private_religious, private_not_religious), 
+                        nrow = 2)
+colnames(type_vs_religion) <- c("Religious", "NotReligious")
+rownames(type_vs_religion) <- c("Public", "Private")
+
+#part b 
+private_schools <- hbcu_edited[which(hbcu_edited$type == "Private"), ]
+private_schools <- private_schools[order(private_schools$price, decreasing = TRUE), ]
+private_schools <- head(private_schools, 5)
+private_schools$n_s <- NULL 
+private_schools$e_w <- NULL 
+
+# part c 
+public_schools <- hbcu_edited[which(hbcu_edited$type == "Public"), ]
+public_schools <- public_schools[order(public_schools$price, decreasing = FALSE), ]
+public_schools <- head(public_schools, 5)
+public_schools$n_s <- NULL 
+public_schools$e_w <- NULL 
