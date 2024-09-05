@@ -1,0 +1,12 @@
+# Gavin Kafkakis 1/24/24 
+
+rm(list=ls())
+
+gkafkakis <- c("Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun")
+gkafkakis 
+
+library(datasets)
+str(mtcars)
+head(mtcars)
+View(mtcars)
+summary(mtcars)
